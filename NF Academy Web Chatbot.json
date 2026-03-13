@@ -1,0 +1,115 @@
+{
+  "name": "NF Academy Web Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Halo! Saya Asisten NF Academy 👋\nAda yang bisa saya bantu seputar kursus, jadwal, atau program AI for Business?",
+        "options": {}
+      },
+      "name": "On Chat Message",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        -80
+      ],
+      "webhookId": "nf-academy-chatbot",
+      "id": "24c94761-9df1-48df-baba-02a06acda868"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Anda adalah asisten cerdas NF Academy. Tugas Anda adalah membantu pengguna dengan informasi seputar:\n- Pendaftaran kursus dan program pelatihan\n- Jadwal belajar dan durasi program\n- Informasi program AI for Business\n\nATURAN:\n1. Jawablah dengan sopan, ramah, dan profesional.\n2. Gunakan bahasa Indonesia yang mudah dipahami.\n3. Jika informasi tidak tersedia dalam basis pengetahuan, sampaikan dengan jujur dan arahkan pengguna ke situs web resmi NF Academy.\n4. Jangan menjawab pertanyaan di luar topik NF Academy."
+        }
+      },
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        288,
+        -80
+      ],
+      "id": "e9f95ce8-948e-4a83-9158-a1a007206e4f"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        176,
+        144
+      ],
+      "id": "55a58cda-bb22-4758-8111-a954245d6f71",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "P4isM3IKU6ykqY0a",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        144
+      ],
+      "id": "40a31f46-4f4a-4801-97f3-1d713afdf590"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On Chat Message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0f5fa8b9-2e95-4fc3-ad0b-328d425f3857",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6dcde181fb1b0e22c2505cf40557f741aa9a3429f99993208c5ad37759f3404b"
+  },
+  "id": "oxnOYyufEoiFL9U4",
+  "tags": []
+}
