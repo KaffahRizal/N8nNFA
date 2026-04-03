@@ -1,0 +1,335 @@
+{
+  "name": "AI Image Generator dengan Polling Loop dan Pengiriman Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Generate Gambar AI",
+        "formDescription": "Masukkan deskripsi gambar yang ingin dibuat.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Deskripsi Gambar (Prompt)",
+              "placeholder": "buatkan gambar...",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "task_type",
+              "placeholder": "txt2img",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "API Key",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Chat ID",
+              "placeholder": "Masukkan Telegram Chat ID Anda",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        32
+      ],
+      "id": "8e7c7240-6c89-496c-bb12-3ce6ab836929",
+      "name": "Submit Text Prompt",
+      "webhookId": "87a2560e-e492-404f-ab6c-ee576c720a6c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json['API Key'] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"model\": \"grok-imagine/text-to-image\",\n    \"input\": {\n        \"prompt\": {{ JSON.stringify($json['Deskripsi Gambar (Prompt)']) }},\n        \"aspect_ratio\": \"3:2\"\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        32
+      ],
+      "id": "0923d24f-8f7c-4963-86b3-ba27befa2f57",
+      "name": "Mengirim Image Generation Request"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        32
+      ],
+      "id": "9aa2d630-25db-48c8-b9c9-b85caf50da84",
+      "name": "Menunggu Proses Generate Gambar",
+      "webhookId": "wait-node-001"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $('Mengirim Image Generation Request').first().json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Submit Text Prompt').first().json['API Key'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        32
+      ],
+      "id": "f67e2c1b-2d6e-48cf-91f4-0b3c3decdf6d",
+      "name": "Mendapatkan Status Generate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "condition-001",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        32
+      ],
+      "id": "ae9c85a0-2391-4627-b667-a67fc0edebfd",
+      "name": "Check Jika Generate Sudah Selesai"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = JSON.parse($json.data.resultJson);\n\nreturn [{\n  json: {\n    img1: result.resultUrls[0] || null,\n    img2: result.resultUrls[1] || null,\n    img3: result.resultUrls[2] || null,\n    img4: result.resultUrls[3] || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        16
+      ],
+      "id": "410e962d-b1e9-46bd-b1c6-afcd56af67ac",
+      "name": "Format Result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urls = [\n  $json.img1,\n  $json.img2,\n  $json.img3,\n  $json.img4\n].filter(Boolean);\n\nreturn urls.map((url, index) => ({\n  json: {\n    url,\n    index: index + 1\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        16
+      ],
+      "id": "940c05b1-74f2-4f5b-8d15-595d224cb1f5",
+      "name": "Loop Image"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1872,
+        16
+      ],
+      "id": "dab21c9c-cb39-47ea-bcd3-df9bc5993339",
+      "name": "Download Gambar"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Submit Text Prompt').item.json['Chat ID'] }}",
+        "binaryData": true,
+        "additionalFields": {
+          "caption": "={{ 'Gambar ' + $('Loop Image').item.json.index }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2176,
+        16
+      ],
+      "id": "6272386c-5397-4fe5-9786-5bcd334721f7",
+      "name": "Kirim Hasil Generate",
+      "webhookId": "dab43487-ebd4-4bf9-a449-e4bc1618ef04",
+      "credentials": {
+        "telegramApi": {
+          "id": "xYSTNugeAnhHKLFA",
+          "name": "Telegram account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Submit Text Prompt": {
+      "main": [
+        [
+          {
+            "node": "Mengirim Image Generation Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mengirim Image Generation Request": {
+      "main": [
+        [
+          {
+            "node": "Menunggu Proses Generate Gambar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Menunggu Proses Generate Gambar": {
+      "main": [
+        [
+          {
+            "node": "Mendapatkan Status Generate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mendapatkan Status Generate": {
+      "main": [
+        [
+          {
+            "node": "Check Jika Generate Sudah Selesai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Jika Generate Sudah Selesai": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Menunggu Proses Generate Gambar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Loop Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Image": {
+      "main": [
+        [
+          {
+            "node": "Download Gambar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Gambar": {
+      "main": [
+        [
+          {
+            "node": "Kirim Hasil Generate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "cce12929-c090-4e92-8f64-bb6b321c0c9c",
+  "meta": {
+    "instanceId": "37e9a66e7d3e46d7627d672ccf295a9c9772ebeec4bcaca586afcb7d6b434629"
+  },
+  "id": "Ko2ENs6xQqllM8Y5",
+  "tags": []
+}
