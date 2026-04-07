@@ -1,0 +1,313 @@
+{
+  "name": "AI Video Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1RVD_K6yhrkTU0XL2ZTrHY-RG7rN6Wqj6",
+          "mode": "list",
+          "cachedResultName": "BARU",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1RVD_K6yhrkTU0XL2ZTrHY-RG7rN6Wqj6"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1424,
+        -96
+      ],
+      "id": "abfc7e29-18a9-44af-8968-0cb787e57ef0",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "jOco3f87sLx3iMat",
+          "name": "Google Drive account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json['API Key'] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"grok-imagine/image-to-video\",\n  \"input\": {\n    \"image_urls\": [\n      \"https://drive.google.com/uc?export=download&id=1lz4XC8-cjVOG07qFuZyrFuQw77_9TpPg\"\n    ],\n    \"prompt\": \"animasikan gambar ini menjadi video dengan durasi 6 detik\",\n    \"mode\": \"normal\",\n    \"duration\": \"6\",\n    \"resolution\": \"480p\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ff7d795b-5b96-4c5c-89bf-69a8d6bbbb13",
+      "name": "Mengirim Video Generation Request"
+    },
+    {
+      "parameters": {
+        "formTitle": "generate video konten otomatis",
+        "formDescription": "isi informasi di bawah ini untuk memulai proses generate video",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "prompt",
+              "placeholder": "isi prompt kamu",
+              "defaultValue": "animasikan gambar kucing tersebut menjadi video berdurasi 6 detik",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "API Key",
+              "defaultValue": "f59be8d391ce81c9b4110ce10b277301",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "img_url",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3ff150d7-8796-490a-9eef-b52b376dc2c0",
+      "name": "Submit Text Prompt",
+      "webhookId": "5fdc9e91-a1fe-4430-84c3-e21d2a6e6381"
+    },
+    {
+      "parameters": {
+        "amount": 20
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "aec8d492-3b6d-4afd-8f28-68a9a994e44f",
+      "name": "Menunggu Proses Generate Video",
+      "webhookId": "cc2f104f-6827-4ae3-9d78-a0c834824aea"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $('Mengirim Video Generation Request').first().json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Submit Text Prompt').first().json['API Key'] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "5a9e0370-f71b-4cef-9c1d-888d828ea9c8",
+      "name": "Mendapatkan Status Generate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5706a3f6-24c0-4936-980b-a332070e1a57",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "1a02725e-29e7-468a-b283-86dae6c5a462",
+      "name": "Check Jika Generate Sudah Selesai"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result =  JSON.parse($json.data.resultJson);\n\nreturn [{\n  videoUrl: result.resultUrls?.[0] || null\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "ec233d8a-6766-451b-a538-922667b48157",
+      "name": "Parse Video URL"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.videoUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        -96
+      ],
+      "id": "0ecc0818-93d3-4ad2-94a2-0fb47b29b08e",
+      "name": "Download Video"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Mengirim Video Generation Request": {
+      "main": [
+        [
+          {
+            "node": "Menunggu Proses Generate Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Text Prompt": {
+      "main": [
+        [
+          {
+            "node": "Mengirim Video Generation Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Menunggu Proses Generate Video": {
+      "main": [
+        [
+          {
+            "node": "Mendapatkan Status Generate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mendapatkan Status Generate": {
+      "main": [
+        [
+          {
+            "node": "Check Jika Generate Sudah Selesai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Jika Generate Sudah Selesai": {
+      "main": [
+        [
+          {
+            "node": "Parse Video URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Menunggu Proses Generate Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Video URL": {
+      "main": [
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "df9726e2-3d4a-4dbf-bb9c-5f7640c9cac0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37e9a66e7d3e46d7627d672ccf295a9c9772ebeec4bcaca586afcb7d6b434629"
+  },
+  "id": "Uv6FEJJtHISmuvnD",
+  "tags": []
+}
