@@ -1,0 +1,404 @@
+{
+  "name": "Pencatat Pengeluaran dari Email",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        96
+      ],
+      "id": "aad69182-3536-49ad-b7e5-6f8b20c843c3",
+      "name": "Email Trigger (IMAP)",
+      "credentials": {
+        "imap": {
+          "id": "dZyfwuPZI4QJzG9W",
+          "name": "IMAP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.from }}",
+                    "rightValue": "kaffahrizal@gmail.com",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "0305d354-fed6-423b-95b0-2107c036a242"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Investasi Masadepan"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "66d89762-76a3-4e07-9781-c8833f39caf0",
+                    "leftValue": "={{ $json.from }}",
+                    "rightValue": "recomendedzero@gmail.com",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cadangan tanggal tua"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "159855e4-97a1-4b07-9214-57f730038a33",
+                    "leftValue": "={{ $json.from }}",
+                    "rightValue": "kaff23012ti@student.nurulfikri.ac.id",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Jatah bulanan"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        80
+      ],
+      "id": "efc8f9b6-4781-4427-b0ad-788a263348b5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        528,
+        80
+      ],
+      "id": "a8bdaf52-0297-4f28-8f51-7a93314acb75",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1OFqoFHvvaiMMsBWEvL38kJO7dvSwCrf7X5-YjAH5SbI",
+          "mode": "list",
+          "cachedResultName": "Pencatat Keuangan",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OFqoFHvvaiMMsBWEvL38kJO7dvSwCrf7X5-YjAH5SbI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OFqoFHvvaiMMsBWEvL38kJO7dvSwCrf7X5-YjAH5SbI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tanggal": "={{ $json.Tanggal }}",
+            "Jumlah": "={{ $json.Jumlah }}",
+            "Keterangan": "={{ $json.Keterangan }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Jumlah",
+              "displayName": "Jumlah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Keterangan",
+              "displayName": "Keterangan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        96
+      ],
+      "id": "314c294f-3d91-4f68-a8b2-46d59422fc84",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "doLcSvVcltHLM36R",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b5c172b-abab-4741-a221-c98fd4fb117d",
+              "name": "Tanggal",
+              "value": "={{ $('Email Trigger (IMAP)').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "d9e5f62b-519b-4736-bff6-a2a35eb35dcb",
+              "name": "Jumlah",
+              "value": "={{ $json.textPlain.match(/Total.*?Rp\\s*([ \\d\\.]+)/s)?.[1].replace(/\\./g, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "3afb7a33-9683-4416-92b7-ce11c98e97de",
+              "name": "Keterangan",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        -64
+      ],
+      "id": "cf0d2a2c-f0b8-44a3-9a64-70620bb5dcaa",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b5c172b-abab-4741-a221-c98fd4fb117d",
+              "name": "Tanggal",
+              "value": "={{ $('Email Trigger (IMAP)').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "d9e5f62b-519b-4736-bff6-a2a35eb35dcb",
+              "name": "Jumlah",
+              "value": "={{ $json.textPlain.match(/TotalTarif.*?([\\d\\.]+)/s)?.[1].replace(/\\./g, '') }}\n",
+              "type": "string"
+            },
+            {
+              "id": "3afb7a33-9683-4416-92b7-ce11c98e97de",
+              "name": "Keterangan",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        96
+      ],
+      "id": "c71d4d2d-14dc-4ddc-b174-d35eb553830d",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7b5c172b-abab-4741-a221-c98fd4fb117d",
+              "name": "Tanggal",
+              "value": "={{ $('Email Trigger (IMAP)').item.json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "d9e5f62b-519b-4736-bff6-a2a35eb35dcb",
+              "name": "Jumlah",
+              "value": "={{ $json.textPlain.match(/Harga\\s*Rp([\\d\\.]+)/)?.[1].replace(/\\./g, '') }}\n",
+              "type": "string"
+            },
+            {
+              "id": "3afb7a33-9683-4416-92b7-ce11c98e97de",
+              "name": "Keterangan",
+              "value": "={{ $json.textPlain.match(/Nominal\\s*(.*?)\\s*Waktu/s)?.[1].trim() }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        256
+      ],
+      "id": "093c9df5-d1c7-4fa2-83c1-3a7e4602280f",
+      "name": "Edit Fields4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Email Trigger (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ec727d86-f357-4003-b40e-e178a6a317ff",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37e9a66e7d3e46d7627d672ccf295a9c9772ebeec4bcaca586afcb7d6b434629"
+  },
+  "id": "A1LDLzJjc2WqEryJ",
+  "tags": []
+}
